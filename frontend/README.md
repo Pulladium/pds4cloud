@@ -1,12 +1,27 @@
-https://mui.com/material-ui/getting-started/templates/
+# Frontend
 
+The browser client lives in `frontend/nasa-front`. It is a React, Vite, MUI, and Keycloak application served by Nginx in Docker Compose.
 
-npm install react-router-dom
-# или если используешь yarn
-yarn add react-router-dom
+## Run with the full stack
 
-npm install --save-dev vite-plugin-svgr
-npm install @mui/material @emotion/react @emotion/styled
+From the repository root:
 
+```bash
+docker compose --profile eval up -d --build
+```
 
-https://www.reddit.com/r/PerseveranceRover/comments/1g6ucs6/collection_of_best_mars_perseverance_rover_images/
+The frontend is exposed on:
+
+```text
+http://localhost:8088
+```
+
+## Local development
+
+```bash
+cd frontend/nasa-front
+npm install
+npm run dev
+```
+
+Vite serves the app on `http://localhost:5173` unless the port is already in use.

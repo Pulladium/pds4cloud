@@ -1,12 +1,13 @@
-# Reproducible Evaluation Protocol
+# Evaluation Protocols
 
 This folder contains API-level protocols for thesis solution verification.
 
 ## Start stack
 
 ```bash
-# edit root .env next to docker-compose.yml with real OPENAI/QDRANT/LANGSMITH values
-docker compose --profile eval up --build
+# edit root .env next to docker-compose.yml with real OpenAI, Qdrant,
+# LangSmith, Keycloak, Kafka, and MinIO values
+docker compose --profile eval up -d --build
 ```
 
 ## Run protocols inside the Compose network
@@ -14,17 +15,17 @@ docker compose --profile eval up --build
 ```bash
 docker compose --profile eval exec -T evaluation-runner python -m evaluation.run_all --clean
 docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.multi_user_project.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.functional.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.job_e2e.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.failure.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.load.run --concurrency 2 --repetitions 1
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.idempotency.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.limits.run --attempts 6
-docker compose --profile eval exec evaluation-runner python -m evaluation.protocols.sequential_reference.run
-docker compose --profile eval exec evaluation-runner python -m evaluation.report
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.functional.run
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.job_e2e.run
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.failure.run
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.load.run --concurrency 2 --repetitions 1
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.idempotency.run
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.limits.run --attempts 6
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.protocols.sequential_reference.run
+docker compose --profile eval exec -T evaluation-runner python -m evaluation.report
 ```
 
-Each protocol lives under `evaluation/protocols/<protocol>/`. Results are written next to the protocol under `evaluation/protocols/<protocol>/results/`, and the combined report is `evaluation/summary.md`.
+Each protocol lives under `evaluation/protocols/<protocol>/`. Results are written next to the protocol under `evaluation/protocols/<protocol>/results/`, and the combined text report is `evaluation/summary.md`. Chart generation is intentionally not part of the evaluation runner.
 
 ## Thesis-default multi-user protocol
 
@@ -94,7 +95,7 @@ docker compose --profile eval exec -T evaluation-runner python -m evaluation.pro
 docker compose --profile eval exec -T evaluation-runner python -m evaluation.report
 ```
 
-The concurrent protocol respects Gateway's active job constraints. With the default three evaluation users it submits jobs in batches of three; with five or more `EVAL_USERS` it submits up to five jobs at a time, matching Gateway's current maximum concurrent job limit.
+The concurrent protocol respects Gateway's active job constraints. With the default three evaluation users it submits jobs in batches of three. If more users are configured, `--max-concurrent-jobs` can raise the submission batch size up to the Gateway limit.
 
 Heavy outputs:
 

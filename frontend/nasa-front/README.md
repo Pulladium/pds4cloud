@@ -1,17 +1,25 @@
-# React + Vite
+# PDS4Cloud Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite frontend for PDS4Cloud. The app provides authenticated project management, Mastcam-Z product discovery, job submission/progress, published projects, vector search, LangSmith status, and admin views.
 
-Currently, two official plugins are available:
+## Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```
 
-## React Compiler
+The production Docker image builds the Vite app and serves it through Nginx.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## PDS4 page index
 
-Note: This will impact Vite dev & build performances.
+The discovery UI uses `public/pds4-page-index.json`. Regenerate it when the product-page source changes:
+
+```bash
+npm run build:pds4-page-index
+```
 
 ## Local Keycloak CORS
 
@@ -25,7 +33,3 @@ blocks `.../protocol/openid-connect/token` with a missing
 
 For another Vite port, use that exact origin instead. Restart the frontend after
 changing the Keycloak client settings.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

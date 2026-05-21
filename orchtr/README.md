@@ -1,40 +1,46 @@
-# Minimal LangGraph Example — Mars2020 Mastcam-Z Pipeline (Graph API)
+# Orchestrator
 
- runnable LangGraph project using the **Graph API**, structured around a real Mars2020 Mastcam-Z ingestion workflow.
+FastAPI and LangGraph service for the Mars 2020 Mastcam-Z processing pipeline. It resolves PDS products, downloads and transforms images, runs analysis, stores artifacts, serves project/search APIs, and participates in the Kafka job pipeline.
 
+## Run locally
 
+The normal project path is Docker Compose from the repository root:
 
-## How to run
+```bash
+docker compose --profile eval up -d --build
+```
+
+For local development inside this directory:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+.venv/bin/uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Graph structure
+## Main API
 
+- `GET /health`
+- `POST /api/process`
+- project routes under `/api/projects`
+- chat routes under `/api/chat`
+- model and LangSmith helper routes
+- Qdrant/vector-search routes
+
+## Single-product graph
+
+`graph_single.py` processes one product through the on-demand pipeline:
+
+```text
+START -> ingest_one -> transform_one -> analyze_one -> finalize -> END
 ```
-START → ingest → prepare → finalize → END
-```
 
-## Shared state (`main.py`)
+The Kafka worker path in `messaging/image_worker.py` uses the same product-processing function.
 
-```python
-class State(TypedDict):
-    from_n:    int        # 1-based start index in product stream
-    to_n:      int        # 1-based end index (inclusive)
-    status:    str        # current pipeline status
-    processed: int        # number of products processed by ingest
-    summary:   str        # human-readable summary (set by prepare)
-    messages:  list[str]  # trace log across all nodes
-```
+## Storage
 
-## Storage architecture
-
-The ingestion node uses a **storage adapter** abstraction (`nodes/ingest/storage/base.py`) so that `core.py` is decoupled from any specific backend.
-
-### Adapter interface
+The ingestion code uses a storage adapter abstraction in `nodes/ingest/storage/`.
 
 ```python
 class StorageAdapter(Protocol):
@@ -42,64 +48,37 @@ class StorageAdapter(Protocol):
     def upload_bytes(self, path: str, data: bytes, content_type: str) -> bool: ...
 ```
 
-### Backend selection
-
 Set `STORAGE_BACKEND` before running:
 
 | Value | Backend |
 |-------|---------|
-| `gcs` (default) | Google Cloud Storage |
-| `minio` | MinIO |
+| `minio` | MinIO, used by the Compose deployment |
+| `gcs` | Google Cloud Storage |
 
-### Running with GCS
-
-```bash
-export STORAGE_BACKEND=gcs
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
-export GCS_PROJECT_ID=your-project-id   # optional, has default
-export GCS_BUCKET=mars2020              # optional, has default
-python main.py
-```
-
-### Running with MinIO
+### MinIO
 
 ```bash
 export STORAGE_BACKEND=minio
 export MINIO_ENDPOINT=localhost:9000
 export MINIO_ACCESS_KEY=minioadmin
 export MINIO_SECRET_KEY=minioadmin
-export MINIO_BUCKET=mars2020            # optional, default: mars2020
-export MINIO_SECURE=false               # optional, default: false
-python main.py
+export MINIO_BUCKET=mars2020
+export MINIO_SECURE=false
 ```
 
-## Demo mode
+### GCS
 
-When the configured storage backend is unreachable (missing credentials, network issue, etc.), `core.py` catches the error and falls back to demo mode — it prints what it *would* upload without making any real network calls.
+```bash
+export STORAGE_BACKEND=gcs
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+export GCS_PROJECT_ID=your-project-id
+export GCS_BUCKET=mars2020
+```
 
-## Standalone CLI
+## Standalone ingest CLI
 
 ```bash
 python -m nodes.ingest.cli --from 1 --to 5
 ```
 
-## Expected output (demo mode, `from_n=1`, `to_n=3`)
-
-```
-STORAGE_BACKEND= gcs
-RANGE: from=1 to=3
-Storage: unavailable (ModuleNotFoundError), running in demo mode
-
-[1] sol=00011 | urn:nasa:pds:mars2020_mast_z:data_raw::demo_0001 [DEMO]
-  Would upload: mastcamz/sol=00011/...
-...
-
-=== FINAL STATE ===
-  status:    complete
-  processed: 3
-  summary:   Mastcam-Z ingest complete: 3 products processed from index 1 to 3.
-  messages:
-    - ingest: processed=3 sols=3 range=[1,3]
-    - prepare: summary built (66 chars)
-    - finalize: pipeline complete
-```
+This CLI is useful for direct PDS ingest checks outside the full job pipeline.
