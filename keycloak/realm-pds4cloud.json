@@ -1,0 +1,72 @@
+{
+  "realm": "pds4cloud",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "RESEARCHER",
+        "description": "Researcher role"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Administrator role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "react-client-certedu-api",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "researcher",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "researcher",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "RESEARCHER"
+      ],
+      "firstName": "Researcher",
+      "lastName": "User",
+      "email": "researcher@example.local",
+      "emailVerified": true,
+      "requiredActions": []
+    },
+    {
+      "username": "admin-user",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "RESEARCHER",
+        "ADMIN"
+      ],
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@example.local",
+      "emailVerified": true,
+      "requiredActions": []
+    }
+  ]
+}

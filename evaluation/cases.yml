@@ -1,0 +1,51 @@
+groups:
+  project_a:
+    - id: calibrated_a_1
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0040_0670489760_581raf_t0031392zcam00027_034300j"
+      thumb_url: ""
+    - id: calibrated_a_2
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zl3_0080_0674039113_113raf_t0032430zcam03129_110300j"
+      thumb_url: ""
+    - id: calibrated_a_3
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0031_0669691133_117ras_t0030828zcam05001_048300j"
+      thumb_url: ""
+    - id: calibrated_a_4
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0037_0670236719_145fdr_t0031392zcam00019_110300j"
+      thumb_url: ""
+    - id: calibrated_a_5
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zl6_0063_0672526881_701fdr_t0032046zcam03015_048300j"
+      thumb_url: ""
+  project_b:
+    - id: calibrated_b_1
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0050_0671381789_081fdr_t0031950zcam08013_063300j"
+      thumb_url: ""
+    - id: calibrated_b_2
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0004_0667312480_357rzs_t0010052zcam00024_110300j"
+      thumb_url: ""
+    - id: calibrated_b_3
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0047_0671111107_027rzs_t0031416zcam05001_110300j"
+      thumb_url: ""
+    - id: calibrated_b_4
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0049_0671290324_998fdr_n0031850zcam05009_110050j"
+      thumb_url: ""
+    - id: calibrated_b_5
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zl1_0002_0667131377_646fdr_n0010052zcam00012_0630luj"
+      thumb_url: ""
+  project_c:
+    - id: calibrated_c_1
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0031_0669690855_101fdr_n0030828zcam05001_048050j"
+      thumb_url: ""
+    - id: calibrated_c_2
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0037_0670236719_145rad_n0031392zcam00019_1100luj"
+      thumb_url: ""
+    - id: calibrated_c_3
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zl6_0063_0672526881_701rad_n0032046zcam03015_048085j"
+      thumb_url: ""
+    - id: calibrated_c_4
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0004_0667312482_332fdr_t0010052zcam00024_110300j"
+      thumb_url: ""
+    - id: calibrated_c_5
+      lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:zlf_0048_0671201568_715raf_n0031708zcam05008_110050j"
+      thumb_url: ""
+failure:
+  bad_lid: "urn:nasa:pds:mars2020_mastcamz_ops_calibrated:data:not_a_real_product"

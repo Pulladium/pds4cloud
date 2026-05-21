@@ -1,0 +1,161 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: kafka
+    container_name: pds4-kafka
+    environment:
+      KAFKA_NODE_ID: ${KAFKA_NODE_ID}
+      KAFKA_PROCESS_ROLES: ${KAFKA_PROCESS_ROLES}
+      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_CONTROLLER_QUORUM_VOTERS}
+      KAFKA_CONTROLLER_LISTENER_NAMES: ${KAFKA_CONTROLLER_LISTENER_NAMES}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: ${KAFKA_AUTO_CREATE_TOPICS_ENABLE}
+      KAFKA_NUM_PARTITIONS: ${KAFKA_NUM_PARTITIONS}
+      CLUSTER_ID: ${CLUSTER_ID}
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    container_name: pds4-minio
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}; do sleep 2; done &&
+      mc mb -p local/${MINIO_BUCKET} || true &&
+      mc anonymous set download local/${MINIO_BUCKET} || true"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: pds4-keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: ${PUBLIC_BASE_URL}
+    volumes:
+      - ./keycloak/realm-pds4cloud.json:/opt/keycloak/data/import/realm-pds4cloud.json:ro
+
+  clip-service:
+    build:
+      context: ./clip-service
+    container_name: pds4-clip
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,json; print(json.load(urllib.request.urlopen('http://localhost:8001/health', timeout=5)))"]
+      interval: 20s
+      timeout: 10s
+      retries: 30
+
+  orchtr:
+    build:
+      context: ./orchtr
+    container_name: pds4-orchtr
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      STORAGE_BACKEND: ${STORAGE_BACKEND}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_SECURE: ${MINIO_SECURE}
+      PUBLIC_OBJECT_BASE_URL: ${PUBLIC_OBJECT_BASE_URL}
+      CLIP_SERVICE_URL: ${CLIP_SERVICE_URL}
+      EVAL_FAULTS: ${EVAL_FAULTS:-}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      clip-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,json; print(json.load(urllib.request.urlopen('http://localhost:8000/health', timeout=5)))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  gateway:
+    build:
+      context: ./gateway
+    container_name: pds4-gateway
+    environment:
+      SERVER_PORT: ${SERVER_PORT}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      PROXY_ORCHTR_BASE_URL: ${PROXY_ORCHTR_BASE_URL}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: ${KEYCLOAK_JWK_SET_URI}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      EVAL_FAULTS: ${EVAL_FAULTS:-}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      orchtr:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend/nasa-front
+      args:
+        VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+        VITE_LANGSMITH_URL: ${VITE_LANGSMITH_URL}
+    container_name: pds4-frontend
+    ports:
+      - "8088:80"
+    depends_on:
+      - gateway
+
+  evaluation-runner:
+    image: python:3.11-slim
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      ORCHTR_URL: ${ORCHTR_URL}
+      GATEWAY_URL: ${GATEWAY_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      EVAL_USERNAME: ${EVAL_USERNAME}
+      EVAL_PASSWORD: ${EVAL_PASSWORD}
+    command: sleep infinity
+    depends_on:
+      frontend:
+        condition: service_started
+      gateway:
+        condition: service_started
+      orchtr:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    profiles: ["eval"]
+
+volumes:
+  minio-data:

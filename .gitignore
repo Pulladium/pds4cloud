@@ -1,0 +1,62 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node/frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# Java/Maven
+target/
+*.class
+
+# Evaluation generated outputs
+evaluation/**/results/
+evaluation/summary.md
+evaluation/reset_manifest.json
+evaluation/*.backup*
+evaluation.backup*/
+evaluation.backup-*/
+evaluation.backup-heavy45-*/
+
+# LaTeX generated outputs
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.pdf
+
+# OS/editor
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local agent/tool state
+.agents/
+.codex/
+.superpowers/
+.git-backups/
+.repo.git/
+response.txt

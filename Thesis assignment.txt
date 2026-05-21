@@ -1,0 +1,27 @@
+I. Bachelor’s thesis details
+Bachelor’s thesis title in English:
+Cloud-Native Processing of NASA Datasets with Security, Observability, and FinOps Guardrails
+Bachelor’s thesis title in Czech:
+Cloud-native pipeline pro zpracování datasetů NASA se zabezpečením, observability a kontrolou
+nákladů
+Guidelines:
+Build a production-oriented platform for a student-selected NASA dataset (large-scale, multi-format, and suitable
+for repeatable batch scenarios). The thesis must include a theoretical research chapter covering cloud reliability
+patterns, IAM/RBAC design, observability practices, and cost-control strategies for data/AI pipelines, plus a
+justification of why the chosen NASA dataset fits these goals.
+Implement a modular solution with Spring Boot (orchestration/API), Python workers (ingest/transform/analyze),
+React + Vite + MUI (operations UI), Keycloak (auth), Google Cloud Storage (artifacts), and Cloud SQL
+PostgreSQL (metadata/job state).
+Core requirements: persistent job lifecycle, idempotency, retry/resume, data-quality validation with
+quarantine/reprocess, structured logs correlated by jobId, metrics (stage duration, failure rate, throughput),
+and admin controls for batch/concurrency/cost limits.
+Add solution verification via a reproducible evaluation protocol: (1) end-to-end functional tests for
+ingest–transform–analyze–export, (2) load and failure tests to validate retry/resume, idempotency, and data
+consistency, (3) operational metrics measurement (stage latency, failure rate, throughput, MTTR), and (4)
+baseline vs. proposed solution comparison, including the cost impact of limits.
+Bibliography / sources:
+Rucco, C., Longo, A., and Saad, M., “Efficient Data Ingestion in Cloud-based architecture: a Data Engineering
+Design Pattern Proposal”, arXiv e-prints, Art. no. arXiv:2503.16079, 2025. doi:10.48550/arXiv.2503.16079.
+Vaswani, A., “Attention Is All You Need”, arXiv e-prints, Art. no. arXiv:1706.03762, 2017.
+doi:10.48550/arXiv.1706.03762.
+Google, Google Cloud Documentation, https://docs.cloud.google.com/docs
